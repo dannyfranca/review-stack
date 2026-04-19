@@ -1,0 +1,6 @@
+interface:
+  display_name: "Review Stack"
+  short_description: "Explicit iterative multi-agent code review with semantic slicing, verification, dedupe, state, and optional fixes."
+  default_prompt: "Use $review-stack to review the current branch and keep looping until no new confirmed blocking or important issues remain."
+policy:
+  allow_implicit_invocation: false
