@@ -1,1 +1,5 @@
 .codex
+.review/
+.review-sessions/
+__pycache__/
+*.pyc
