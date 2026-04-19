@@ -1,5 +1,7 @@
 # Output contract
 
+Read this file when writing or validating structured review artifacts. Do not load it just to understand the review lifecycle; `SKILL.md` is the canonical flow.
+
 ## Mapper output
 
 `review_mapper` writes `$REVIEW_DIR/semantic-slices.json`:

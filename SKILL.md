@@ -28,17 +28,32 @@ fi
 
 Run helper scripts through `$SKILL_DIR/scripts/...`. If a script cannot run, perform the same step manually and write the same output files.
 
-## Mandatory references
+## Reference loading
 
-At the start of a review-stack run, read these files from `$SKILL_DIR`:
+Read these files at the start of every review-stack run:
 
 - `references/review-policy.md`
 - `references/semantic-slicing.md`
 - `references/routing-matrix.md`
-- `references/loop-protocol.md`
-- `references/output-contract.md`
+
+Read these files only when the phase needs them:
+
+- `references/loop-protocol.md` for interrupted-session recovery, blocked/manual-decision handling, or convergence/dedupe edge cases.
+- `references/output-contract.md` when writing or validating `semantic-slices.json`, reviewer JSON, verifier JSON, `deduped-findings.json`, or the final report structure.
 
 Use `schemas/finding.schema.json` for reviewer outputs and `schemas/loop-state.schema.json` for durable state. Use `assets/final-report-template.md` for the final human-facing report. `assets/state-template.json` is used by `review-inventory.py` and by manual state initialization.
+
+## Preferred orchestration
+
+Prefer `python3 "$SKILL_DIR/scripts/review-run.py" ...` as the thin control surface for session bootstrap, loop bookkeeping, and status transitions.
+
+Use the lower-level helper scripts directly only when:
+
+- `review-run.py` cannot run;
+- you need a primitive that the wrapper does not expose; or
+- you are manually repairing a partially written session.
+
+`review-run.py` is not a reviewer. It only coordinates `review-inventory.py`, `review-state.py`, and `review-status.py`.
 
 ## Inputs
 
@@ -83,16 +98,18 @@ Execute this loop until convergence:
 
 1. **Inventory**
    - Resolve `SKILL_DIR` using the script path rule.
-   - Run `python3 "$SKILL_DIR/scripts/review-inventory.py" --base <base> --mode <mode> --max-loops <max_loops> [--review-dir "$REVIEW_DIR"]`.
+   - Prefer `python3 "$SKILL_DIR/scripts/review-run.py" prepare --base <base> --mode <mode> --max-loops <max_loops> [--review-dir "$REVIEW_DIR"]`.
+   - If the wrapper cannot run, fall back to `python3 "$SKILL_DIR/scripts/review-inventory.py" --base <base> --mode <mode> --max-loops <max_loops> [--review-dir "$REVIEW_DIR"]`.
    - Capture `review_dir` and `session_id` from the script output when `REVIEW_DIR` was not preselected, then reuse that exact `REVIEW_DIR` for the rest of the run.
    - Read `$REVIEW_DIR/inventory.json`, `$REVIEW_DIR/slices.preliminary.json`, and `$REVIEW_DIR/full.diff`.
-   - Run `python3 "$SKILL_DIR/scripts/review-status.py" --review-dir "$REVIEW_DIR"` to inspect existing loop state if the session directory already exists.
+   - Run `python3 "$SKILL_DIR/scripts/review-run.py" status --review-dir "$REVIEW_DIR"` to inspect existing loop state if the session directory already exists.
+   - If the wrapper cannot run, fall back to `python3 "$SKILL_DIR/scripts/review-status.py" --review-dir "$REVIEW_DIR"`.
    - Inventory is non-destructive: it writes only `REVIEW_DIR`, excludes review-state directories and generated/vendor paths from scope, and includes synthetic diff blocks for text untracked files.
    - If the script cannot run, build equivalent inventory manually and write the same files.
 
 2. **Loop bookkeeping**
-   - Start each full loop with `python3 "$SKILL_DIR/scripts/review-state.py" --review-dir "$REVIEW_DIR" start-loop --note "<short loop intent>"`.
-   - Use `record-check`, `finish-loop`, and `stop` subcommands to keep `$REVIEW_DIR/state.json` consistent.
+   - Start each full loop with `python3 "$SKILL_DIR/scripts/review-run.py" start-loop --review-dir "$REVIEW_DIR" --note "<short loop intent>"`.
+   - Use `record-check`, `finish-loop`, and `stop` through `review-run.py` to keep `$REVIEW_DIR/state.json` consistent.
    - If `review-state.py` cannot run, update `$REVIEW_DIR/state.json` manually using `schemas/loop-state.schema.json`.
 
 3. **Semantic mapping**
@@ -107,7 +124,8 @@ Execute this loop until convergence:
 4. **Deterministic gates**
    - Discover cheap validation commands from repo scripts/config and from `$REVIEW_DIR/semantic-slices.json.suggested_tests`.
    - Run cheap safe checks first: diff check, typecheck, lint, focused tests.
-   - Record each check with `python3 "$SKILL_DIR/scripts/review-state.py" --review-dir "$REVIEW_DIR" record-check --command "<cmd>" --status pass|fail|skipped|unknown --note "<note>"`.
+   - Record each check with `python3 "$SKILL_DIR/scripts/review-run.py" record-check --review-dir "$REVIEW_DIR" --command "<cmd>" --status pass|fail|skipped|unknown --note "<note>"`.
+   - If the wrapper cannot run, fall back to `python3 "$SKILL_DIR/scripts/review-state.py" --review-dir "$REVIEW_DIR" record-check ...`.
    - Do not report issues that are already fully covered by deterministic gates unless they expose behavior risk.
 
 5. **Parallel review wave**
@@ -141,7 +159,8 @@ Execute this loop until convergence:
    - Mark resolved findings in `$REVIEW_DIR/resolved-findings.json` with evidence and tests run.
 
 9. **Convergence check**
-   - Finish each loop with `python3 "$SKILL_DIR/scripts/review-state.py" --review-dir "$REVIEW_DIR" finish-loop --new-confirmed <n> --remaining-confirmed <n> --fixes-applied <n> --deterministic-gates-passing true|false|unknown`.
+   - Finish each loop with `python3 "$SKILL_DIR/scripts/review-run.py" finish-loop --review-dir "$REVIEW_DIR" --new-confirmed <n> --remaining-confirmed <n> --fixes-applied <n> --deterministic-gates-passing true|false|unknown`.
+   - If the wrapper cannot run, fall back to `python3 "$SKILL_DIR/scripts/review-state.py" --review-dir "$REVIEW_DIR" finish-loop ...`.
    - Start another full loop if any confirmed blocking/important finding remains.
    - Start another full loop if fixes were applied in this loop.
    - Stop when a full review wave produces zero new confirmed blocking/important findings and deterministic gates are passing or documented.
@@ -151,8 +170,10 @@ Execute this loop until convergence:
 10. **Final gate**
    - Spawn `review_final_gate` over the final full diff.
    - Incorporate only new confirmed findings.
-   - Run `python3 "$SKILL_DIR/scripts/review-status.py" --review-dir "$REVIEW_DIR"` and write the status summary into the final report.
-   - Record stop reason with `python3 "$SKILL_DIR/scripts/review-state.py" --review-dir "$REVIEW_DIR" stop "<reason>"`.
+   - Run `python3 "$SKILL_DIR/scripts/review-run.py" status --review-dir "$REVIEW_DIR"` and write the status summary into the final report.
+   - If the wrapper cannot run, fall back to `python3 "$SKILL_DIR/scripts/review-status.py" --review-dir "$REVIEW_DIR"`.
+   - Record stop reason with `python3 "$SKILL_DIR/scripts/review-run.py" stop --review-dir "$REVIEW_DIR" "<reason>"`.
+   - If the wrapper cannot run, fall back to `python3 "$SKILL_DIR/scripts/review-state.py" --review-dir "$REVIEW_DIR" stop "<reason>"`.
    - Write `$REVIEW_DIR/final-report.md` using `assets/final-report-template.md`.
 
 ## Output discipline

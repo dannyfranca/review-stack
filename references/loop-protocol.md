@@ -1,54 +1,37 @@
-# Review-stack loop protocol
+# Loop edge cases
 
-## Canonical lifecycle
+`SKILL.md` owns the canonical review lifecycle. Read this file only for edge cases that are easy to mishandle during a long-running or interrupted session.
 
-1. Build inventory.
-2. Run deterministic checks.
-3. Run broad reviewers.
-4. Run routed specialist reviewers.
-5. Verify candidates.
-6. Optionally build duplicate-pair hints for noisy waves, then dedupe contextually by root cause.
-7. Fix confirmed issues if requested.
-8. Re-review affected slices.
-9. Run final full-diff gate.
-10. Write final report.
+## Session recovery
 
-## Convergence criteria
+- Reuse the existing `REVIEW_DIR` when resuming an interrupted run in the same worktree.
+- Inspect `state.json`, `inventory.json`, and `semantic-slices.json` before spawning a new review wave.
+- Do not restart from loop 1 unless the existing session files are missing or clearly unusable.
+- If `state.json` is corrupt but the rest of the session is intact, repair the minimum required fields and preserve the same `session_id`.
 
-Stop when all are true:
+## Blocked and manual-decision outcomes
 
-- no confirmed `blocking` or `important` findings remain;
-- the last full review loop produced zero new confirmed root causes;
-- deterministic checks pass, are not applicable, or are explicitly documented as not run;
-- remaining items are only `nit`, `question`, `pre_existing`, `rejected`, or `duplicate`.
+Use `blocked` when validation cannot run safely, dependencies or credentials are unavailable, or the diff cannot be interpreted with confidence.
 
-Stop with `needs_manual_decision` when the only remaining high-severity items are product/security/architecture decisions that cannot be resolved from code.
+Use `needs_manual_decision` when the remaining high-severity items depend on human judgment, such as:
 
-Stop with `blocked` when validation cannot run, dependencies are unavailable, or the diff cannot be understood safely.
-
-## Root-cause dedupe
-
-Dedupe is contextual. The `review-dedupe.py` script may propose candidate pairs, but only `review_aggregator` decides the canonical queue after reading code/diff context, verifier output, semantic slices, and raw findings.
-
-Merge findings when these fields describe the same underlying problem:
-
-- category;
-- failure mode;
-- affected symbol/API/route/job/schema;
-- primary changed file;
-- overlapping line range or same call path;
-- same minimal fix direction.
-
-Do not merge separate bugs just because they appear in the same file, same handler, same endpoint group, or same reviewer wave. When uncertain, keep them separate or move the merge decision to manual review.
-
-## Manual-review inbox
-
-Use `$REVIEW_DIR/manual-review.md` for items requiring human judgment:
-
-- intentional API break or product behavior change;
-- uncertain security policy tradeoff;
+- intentional API or product behavior changes;
+- security-policy tradeoffs;
 - migration/deploy risk acceptance;
-- unclear ownership or architecture boundary;
-- test expectation depends on intended behavior.
+- architecture or ownership boundaries;
+- test expectations that depend on intended behavior.
 
-Manual-review items do not block the automated fix loop unless they are confirmed security/data risks.
+Keep those items in `$REVIEW_DIR/manual-review.md`. Do not continue the automated fix loop once only manual-decision items remain.
+
+## Convergence edge cases
+
+- If deterministic checks cannot run, document exactly why before stopping.
+- If two consecutive loops produce only rejected, duplicate, `question`, `nit`, or `pre_existing` outcomes, stop instead of forcing another broad wave.
+- If a fix lands, re-run the narrowest relevant checks and re-review the affected semantic slice before deciding whether a full extra loop is necessary.
+- If `max_loops` is reached, stop cleanly, record the reason, and leave the remaining confirmed queue intact.
+
+## Dedupe edge cases
+
+- `review-dedupe.py` can suggest overlap, but it never decides the canonical queue.
+- When two findings touch the same file but describe different entrypoints, failure modes, or fix directions, keep them separate.
+- When uncertain whether two findings share one root cause, prefer separate items or move the merge decision into manual review.
