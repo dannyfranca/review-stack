@@ -14,7 +14,7 @@ Use `important` for realistic correctness, security, data, migration, concurrenc
 Use `nit` for small maintainability or readability concerns. Cap nits at five and never let them obscure higher-signal findings.
 
 ### Question
-Use `question` when the issue depends on product intent, security policy, or an architectural decision that cannot be resolved from code. These go to `.review/manual-review.md`, not the automated fix loop.
+Use `question` when the issue depends on product intent, security policy, or an architectural decision that cannot be resolved from code. These go to `$REVIEW_DIR/manual-review.md`, not the automated fix loop.
 
 ### Pre-existing
 Use `pre_existing` for defects not introduced by this diff. Exclude these from the blocking queue unless the diff materially worsens them.
@@ -51,3 +51,8 @@ A blocking or important finding must include:
 - verification path.
 
 If any of those are missing, downgrade to `question`, `nit`, or reject it during verification.
+
+
+## Contextual dedupe
+
+Duplicate detection requires reading the actual code path and failure mode. Static pair hints may surface useful overlap, but the canonical review queue must be decided by `review_aggregator`. If two findings mention the same file but different entrypoints, line ranges, failure modes, or minimal fixes, keep them separate.

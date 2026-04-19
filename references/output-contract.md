@@ -2,7 +2,7 @@
 
 ## Mapper output
 
-`review_mapper` writes `.review/semantic-slices.json`:
+`review_mapper` writes `$REVIEW_DIR/semantic-slices.json`:
 
 ```json
 {
@@ -81,6 +81,47 @@ Each finding:
   ]
 }
 ```
+
+
+## Dedupe-candidate index
+
+`review-dedupe.py` may write `$REVIEW_DIR/dedupe-candidates.json` for noisy review waves. This file is not authoritative. It keeps lightweight references to higher-signal raw findings and provides only possible duplicate pairs:
+
+```json
+{
+  "algorithm": "dedupe-candidate-index-v2",
+  "note": "candidate hints only",
+  "skipped": false,
+  "skip_reason": "",
+  "input_finding_count": 6,
+  "qualifying_finding_count": 4,
+  "skipped_low_signal_count": 2,
+  "qualifying_severities": ["blocking", "important"],
+  "candidate_pair_count": 1,
+  "finding_refs": [{"uid": "abc123", "source_file": "<review-dir>/raw-findings/loop-1/a.json"}],
+  "candidate_pairs": [
+    {"a": "abc123", "b": "def456", "score": 7, "reasons": ["shared symbol/entrypoint"]}
+  ]
+}
+```
+
+When `skipped` is `true`, the file is still non-authoritative and simply records why pair generation was not useful for that run. Missing `dedupe-candidates.json` is also acceptable.
+
+## Canonical deduped queue
+
+`review_aggregator` writes `$REVIEW_DIR/deduped-findings.json` as the authoritative queue:
+
+```json
+{
+  "blocking": [],
+  "important": [],
+  "question": [],
+  "nit": [],
+  "pre_existing": []
+}
+```
+
+It must not blindly accept candidate pairs.
 
 ## Final report verdicts
 

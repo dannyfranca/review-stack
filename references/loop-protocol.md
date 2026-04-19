@@ -7,7 +7,7 @@
 3. Run broad reviewers.
 4. Run routed specialist reviewers.
 5. Verify candidates.
-6. Dedupe by root cause.
+6. Optionally build duplicate-pair hints for noisy waves, then dedupe contextually by root cause.
 7. Fix confirmed issues if requested.
 8. Re-review affected slices.
 9. Run final full-diff gate.
@@ -26,7 +26,9 @@ Stop with `needs_manual_decision` when the only remaining high-severity items ar
 
 Stop with `blocked` when validation cannot run, dependencies are unavailable, or the diff cannot be understood safely.
 
-## Root-cause dedupe key
+## Root-cause dedupe
+
+Dedupe is contextual. The `review-dedupe.py` script may propose candidate pairs, but only `review_aggregator` decides the canonical queue after reading code/diff context, verifier output, semantic slices, and raw findings.
 
 Merge findings when these fields describe the same underlying problem:
 
@@ -37,11 +39,11 @@ Merge findings when these fields describe the same underlying problem:
 - overlapping line range or same call path;
 - same minimal fix direction.
 
-Do not merge separate bugs just because they appear in the same file.
+Do not merge separate bugs just because they appear in the same file, same handler, same endpoint group, or same reviewer wave. When uncertain, keep them separate or move the merge decision to manual review.
 
 ## Manual-review inbox
 
-Use `.review/manual-review.md` for items requiring human judgment:
+Use `$REVIEW_DIR/manual-review.md` for items requiring human judgment:
 
 - intentional API break or product behavior change;
 - uncertain security policy tradeoff;
