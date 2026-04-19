@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["summary", "risk_areas", "slices"],
+  "properties": {
+    "summary": {"type": "string"},
+    "risk_areas": {"type": "array", "items": {"type": "string"}},
+    "slices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "intent", "files", "risk_tags", "required_reviewers", "reason"],
+        "properties": {
+          "id": {"type": "string"},
+          "title": {"type": "string"},
+          "intent": {"type": "string"},
+          "entrypoints": {"type": "array", "items": {"type": "string"}},
+          "files": {"type": "array", "items": {"type": "string"}},
+          "changed_symbols": {"type": "array", "items": {"type": "string"}},
+          "context_files": {"type": "array", "items": {"type": "string"}},
+          "risk_tags": {"type": "array", "items": {"type": "string"}},
+          "required_reviewers": {"type": "array", "items": {"type": "string"}},
+          "suggested_tests": {"type": "array", "items": {"type": "string"}},
+          "related_slices": {"type": "array", "items": {"type": "string"}},
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "deterministic_checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "command": {"type": "string"},
+          "reason": {"type": "string"},
+          "cheap": {"type": "boolean"},
+          "required": {"type": "boolean"}
+        }
+      }
+    }
+  }
+}
