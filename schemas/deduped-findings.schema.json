@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "blocking",
+    "important",
+    "question",
+    "nit",
+    "pre_existing"
+  ],
+  "properties": {
+    "blocking": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "important": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "question": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "nit": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "pre_existing": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  }
+}

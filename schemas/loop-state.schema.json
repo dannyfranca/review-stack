@@ -6,7 +6,22 @@
     "version": {
       "type": "integer"
     },
+    "session_id": {
+      "type": "string"
+    },
+    "review_dir": {
+      "type": "string"
+    },
+    "repo_root": {
+      "type": "string"
+    },
+    "head_sha": {
+      "type": "string"
+    },
     "base": {
+      "type": "string"
+    },
+    "merge_base": {
       "type": "string"
     },
     "mode": {
@@ -37,7 +52,61 @@
       ]
     },
     "loops": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "loop": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "started_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "finished_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "note": {
+            "type": "string"
+          },
+          "new_confirmed": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "remaining_confirmed": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "fixes_applied": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "deterministic_gates_passing": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false",
+              "unknown"
+            ]
+          }
+        }
+      }
     },
     "canonical_findings": {
       "type": "array"
@@ -57,7 +126,12 @@
   },
   "required": [
     "version",
+    "session_id",
+    "review_dir",
+    "repo_root",
+    "head_sha",
     "base",
+    "merge_base",
     "mode",
     "current_loop",
     "max_loops",

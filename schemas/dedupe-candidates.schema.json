@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "algorithm",
+    "note",
+    "skipped",
+    "skip_reason",
+    "input_finding_count",
+    "qualifying_finding_count",
+    "skipped_low_signal_count",
+    "qualifying_severities",
+    "candidate_pair_count",
+    "finding_refs",
+    "candidate_pairs"
+  ],
+  "properties": {
+    "algorithm": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    },
+    "skipped": {
+      "type": "boolean"
+    },
+    "skip_reason": {
+      "type": "string"
+    },
+    "input_finding_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "qualifying_finding_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "skipped_low_signal_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "qualifying_severities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "candidate_pair_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "finding_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "uid",
+          "severity",
+          "category",
+          "title",
+          "file",
+          "source_file",
+          "source_agent",
+          "source_index"
+        ],
+        "properties": {
+          "uid": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          },
+          "line_start": {
+            "type": ["integer", "null"]
+          },
+          "line_end": {
+            "type": ["integer", "null"]
+          },
+          "source_file": {
+            "type": "string"
+          },
+          "source_agent": {
+            "type": "string"
+          },
+          "source_index": {
+            "type": ["integer", "null"]
+          }
+        }
+      }
+    },
+    "candidate_pairs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "a",
+          "b",
+          "score",
+          "reasons",
+          "signals",
+          "note"
+        ],
+        "properties": {
+          "a": {
+            "type": "string"
+          },
+          "b": {
+            "type": "string"
+          },
+          "score": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "signals": {
+            "type": "object"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
