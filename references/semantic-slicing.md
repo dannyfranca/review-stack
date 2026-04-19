@@ -43,7 +43,7 @@ Each semantic slice should include:
   "entrypoints": ["route/function/job/component/schema"],
   "files": ["repo-relative files"],
   "changed_symbols": ["symbols/routes/jobs/contracts inferred from diff"],
-  "context_files": ["nearby callers/callees/tests/config to read"],
+  "context_files": ["minimal nearby callers/callees/tests/config to read for verification only"],
   "risk_tags": ["security|migration|api_contract|test|frontend|concurrency_perf|dependency|config_build_deploy|general"],
   "required_reviewers": ["review_slice_context", "review_security"],
   "suggested_tests": ["commands or test files"],
@@ -51,6 +51,12 @@ Each semantic slice should include:
   "reason": "why this slice boundary is useful"
 }
 ```
+
+## Context files
+
+`context_files` are for understanding changed behavior. They are not independent review targets.
+
+Keep them minimal and specific. If a concern in unchanged code is not introduced or materially worsened by the diff, it is out of scope for the main queue.
 
 ## Reviewer routing
 

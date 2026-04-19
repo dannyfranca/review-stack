@@ -16,12 +16,13 @@ Use `blocked` when validation cannot run safely, dependencies or credentials are
 Use `needs_manual_decision` when the remaining high-severity items depend on human judgment, such as:
 
 - intentional API or product behavior changes;
+- fixes that would remove or materially narrow an existing feature or fallback path (even for security patches);
 - security-policy tradeoffs;
 - migration/deploy risk acceptance;
 - architecture or ownership boundaries;
 - test expectations that depend on intended behavior.
 
-Keep those items in `$REVIEW_DIR/manual-review.md`. Do not continue the automated fix loop once only manual-decision items remain.
+Keep those items in `$REVIEW_DIR/manual-review.md`. Do not continue the automated fix loop once only manual-decision items remain. Describe the proposed break, the affected behavior or tests, and the exact decision the human owner needs to make.
 
 ## Convergence edge cases
 

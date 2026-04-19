@@ -108,6 +108,7 @@ Execute this loop until convergence:
    - Give it `$REVIEW_DIR/inventory.json`, `$REVIEW_DIR/slices.preliminary.json`, `$REVIEW_DIR/full.diff`, and `$SKILL_DIR/references/semantic-slicing.md`.
    - It must produce `$REVIEW_DIR/semantic-slices.json`.
    - Semantic slices must be based on changed behavior, entrypoint, route, job, migration, contract, frontend flow, or shared helper. They must not be limited to file-name buckets.
+   - Slice `files` must stay within the changed review scope. `context_files` are read-only context for understanding changed behavior, not independent review targets.
    - If multiple endpoints changed under the same directory, create one semantic slice per endpoint or API action unless they are the same behavior.
    - Allow files to appear in multiple slices when shared helpers or contracts connect behaviors.
    - If `review_mapper` is unavailable, emulate it in the parent thread and write `$REVIEW_DIR/semantic-slices.json` manually.
@@ -124,6 +125,9 @@ Execute this loop until convergence:
    - Always run `review_tests` over the full diff and test changes.
    - Run one `review_slice_context` reviewer per semantic slice from `$REVIEW_DIR/semantic-slices.json`, capped by `agents.max_threads`; batch remaining slices if needed.
    - Trigger specialists from each slice's `required_reviewers` and the reviewer-routing table in `references/semantic-slicing.md`.
+   - Reviewers may read unchanged context only to understand or verify changed behavior.
+   - A finding is in scope only when the diff introduced or materially worsened it, either in changed code directly or through a changed path that newly exposes unchanged code.
+   - If an unchanged-code concern would exist without this diff, reject it or mark it `pre_existing`; do not send it into the main queue.
    - Ask each reviewer to return JSON matching `schemas/finding.schema.json`.
    - Save outputs under `$REVIEW_DIR/raw-findings/loop-<n>/`.
 
@@ -131,6 +135,8 @@ Execute this loop until convergence:
    - For every blocking/important candidate, spawn `review_verifier`.
    - The verifier must try to reject the finding first.
    - Confirm only findings that are introduced by the diff, concrete, reachable or plausibly production-relevant, and supported by code evidence.
+   - Reject candidates that are not clearly tied to the diff, even when reading nearby context uncovered a real issue elsewhere.
+   - If the likely remediation would remove or materially narrow an existing feature, change established user-visible behavior, change an API contract, or require rewriting existing tests that currently protect supported behavior, downgrade the item to `question` and route it to manual review unless the diff or surrounding code clearly proves that the breaking change is intentional.
    - Save verifier output under `$REVIEW_DIR/verified/loop-<n>/`.
 
 7. **Contextual aggregation and dedupe**
@@ -138,13 +144,16 @@ Execute this loop until convergence:
    - Use `$REVIEW_DIR/dedupe-candidates.json` only as optional pair hints.
    - Use `review_aggregator` to perform contextual dedupe by root cause using raw findings, verifier outputs, code/diff context, semantic slices, and any candidate pair hints that exist.
    - `review_aggregator` writes `$REVIEW_DIR/deduped-findings.json` as the authoritative queue.
-   - Keep ambiguous product/security/architecture questions in `$REVIEW_DIR/manual-review.md`; do not send them into the fix loop.
+   - Keep ambiguous product/security/architecture/breaking-change questions in `$REVIEW_DIR/manual-review.md`; do not send them into the fix loop.
+   - When an item goes to manual review, write a clear handoff covering: the proposed or implied breaking change, why the reviewer thinks it matters, affected feature/API/tests/checks, and the exact human decision needed.
 
 8. **Fix phase**
    - If `mode=audit`, do not edit production files. Go to convergence check.
    - If `mode=fix`, fix only confirmed blocking/important findings.
    - Use `review_fixer` for one issue or tightly-related issue cluster at a time.
+   - Instruct `review_fixer` to refuse fixes that remove supported behavior, disable fallbacks, or rewrite existing tests to bless a new behavior unless intent is explicit in the diff, surrounding code, or user instruction.
    - Prefer isolated worktrees when practical. If working in the current tree, avoid concurrent fixers touching overlapping files.
+   - Do not apply a fix that removes supported behavior, disables a fallback/offline path, changes org/account/product semantics, or rewrites failing existing tests to bless a new behavior unless human intent is explicit in the diff, surrounding code, or user instruction. Route that case to `$REVIEW_DIR/manual-review.md`.
    - After each fix, run the narrowest relevant checks and re-review the affected semantic slice.
    - Mark resolved findings in `$REVIEW_DIR/resolved-findings.json` with evidence and tests run.
 
@@ -170,7 +179,7 @@ The final response to the user should not dump raw subagent output. Return:
 - final verdict;
 - blocking/important queue, deduped;
 - what was fixed, if anything;
-- remaining manual decisions;
+- remaining manual decisions, including any breaking-change candidates and affected tests/checks;
 - deterministic checks run;
 - path to `$REVIEW_DIR/final-report.md`.
 

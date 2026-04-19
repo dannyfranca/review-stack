@@ -125,6 +125,10 @@ Missing or skipped `dedupe-candidates.json` is acceptable.
 
 Do not blindly accept candidate pairs.
 
+## Manual-review markdown
+
+If `$REVIEW_DIR/manual-review.md` is written, keep one item per decision and make the breaking change, affected behavior/tests, and required human decision explicit. `SKILL.md` owns the stronger handoff guidance.
+
 ## Final report verdicts
 
 - `ready`: no confirmed blocking/important findings remain.
