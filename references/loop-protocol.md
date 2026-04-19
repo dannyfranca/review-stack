@@ -26,9 +26,7 @@ Keep those items in `$REVIEW_DIR/manual-review.md`. Do not continue the automate
 ## Convergence edge cases
 
 - If deterministic checks cannot run, document exactly why before stopping.
-- If two consecutive loops produce only rejected, duplicate, `question`, `nit`, or `pre_existing` outcomes, stop instead of forcing another broad wave.
-- If a fix lands, re-run the narrowest relevant checks and re-review the affected semantic slice before deciding whether a full extra loop is necessary.
-- If `max_loops` is reached, stop cleanly, record the reason, and leave the remaining confirmed queue intact.
+- If a session ends early because `max_loops` was reached or the workspace became unsafe to reason about, record the exact stop reason and leave the remaining confirmed queue intact.
 
 ## Dedupe edge cases
 

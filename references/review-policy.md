@@ -55,4 +55,4 @@ If any of those are missing, downgrade to `question`, `nit`, or reject it during
 
 ## Contextual dedupe
 
-Duplicate detection requires reading the actual code path and failure mode. Static pair hints may surface useful overlap, but the canonical review queue must be decided by `review_aggregator`. If two findings mention the same file but different entrypoints, line ranges, failure modes, or minimal fixes, keep them separate.
+Decide duplicates from code path and failure mode, not filename overlap. If two findings differ in entrypoint, line range, failure mode, or minimal fix, keep them separate.

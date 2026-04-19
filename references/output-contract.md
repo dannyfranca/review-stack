@@ -87,7 +87,7 @@ Each finding:
 
 ## Dedupe-candidate index
 
-`review-dedupe.py` may write `$REVIEW_DIR/dedupe-candidates.json` for noisy review waves. This file is not authoritative. It keeps lightweight references to higher-signal raw findings and provides only possible duplicate pairs:
+`review-dedupe.py` may write `$REVIEW_DIR/dedupe-candidates.json` for noisy review waves. It keeps lightweight references to higher-signal raw findings and possible duplicate pairs:
 
 ```json
 {
@@ -107,7 +107,7 @@ Each finding:
 }
 ```
 
-When `skipped` is `true`, the file is still non-authoritative and simply records why pair generation was not useful for that run. Missing `dedupe-candidates.json` is also acceptable.
+Missing or skipped `dedupe-candidates.json` is acceptable.
 
 ## Canonical deduped queue
 
@@ -123,7 +123,7 @@ When `skipped` is `true`, the file is still non-authoritative and simply records
 }
 ```
 
-It must not blindly accept candidate pairs.
+Do not blindly accept candidate pairs.
 
 ## Final report verdicts
 
