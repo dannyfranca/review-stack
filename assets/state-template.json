@@ -1,6 +1,11 @@
 {
   "version": 1,
+  "session_id": "",
+  "review_dir": "",
+  "repo_root": "",
+  "head_sha": "",
   "base": "origin/main",
+  "merge_base": "",
   "mode": "audit",
   "current_loop": 0,
   "max_loops": 6,

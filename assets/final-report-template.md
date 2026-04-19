@@ -28,4 +28,4 @@ Verdict: {{verdict}}
 
 ## Evidence
 
-Raw review state is under `.review/`.
+Raw review state is under `{{review_dir}}`.
