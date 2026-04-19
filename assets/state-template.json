@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "base": "origin/main",
+  "mode": "audit",
+  "current_loop": 0,
+  "max_loops": 6,
+  "started_at": null,
+  "last_updated_at": null,
+  "loops": [],
+  "canonical_findings": [],
+  "resolved_findings": [],
+  "manual_review": [],
+  "deterministic_checks": [],
+  "stop_reason": ""
+}
